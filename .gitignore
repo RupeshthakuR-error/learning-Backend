@@ -5,6 +5,10 @@ package-lock.json
 # Environment variables (Never commit secret credentials!)
 .env
 
+# Postman local mode runtime cache
+.postman/
+postman/
+
 # Logs
 logs/
 *.log
