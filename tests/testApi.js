@@ -1,6 +1,6 @@
 /**
  * Comprehensive API Test Suite
- * Tests all endpoints, routing, error handling, and status codes
+ * Tests all endpoints, routing, database CRUD, error handling, and status codes
  */
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
@@ -79,24 +79,25 @@ async function runTests() {
     const invalidDelete = await request('DELETE', '/api/items/invalid-hex-123');
     assert(invalidDelete.status === 400 && invalidDelete.body.success === false, 'DELETE /api/items/invalid-hex-123 returns 400 Bad Request');
 
-    // 6. Check MongoDB Connection State
-    console.log('\n[6] Checking MongoDB Connection State...');
-    const isDbConnected = mongoose.connection.readyState === 1;
+    // 6. Wait for MongoDB Connection
+    console.log('\n[6] Connecting to MongoDB Atlas...');
+    let attempts = 0;
+    while (mongoose.connection.readyState !== 1 && attempts < 15) {
+      await new Promise((r) => setTimeout(r, 500));
+      attempts++;
+    }
 
+    const isDbConnected = mongoose.connection.readyState === 1;
     if (!isDbConnected) {
       console.log('\n\x1b[33m----------------------------------------------------------------------');
-      console.log(' [NOTICE] MongoDB Atlas URI is not yet configured or connected.');
-      console.log('          - Express Server initialization: VERIFIED');
-      console.log('          - Express Routing & Controllers: VERIFIED');
-      console.log('          - 400 Bad Request validation handling: VERIFIED');
-      console.log('          - 404 Not Found route handling: VERIFIED');
-      console.log('          - Database CRUD operations will run as soon as MONGO_URI is added in .env.');
+      console.log(' [NOTICE] MongoDB connection timed out or is not ready.');
       console.log('----------------------------------------------------------------------\x1b[0m');
     } else {
-      console.log(' \x1b[32m✔ MongoDB is connected! Executing full database CRUD tests...\x1b[0m');
+      console.log(` \x1b[32m✔ MongoDB is connected to: ${mongoose.connection.host} (${mongoose.connection.name})\x1b[0m`);
+      console.log('   Executing full database CRUD tests...\n');
 
       // 7. CREATE (POST /api/items)
-      console.log('\n[7] Testing CREATE: POST /api/items...');
+      console.log('[7] Testing CREATE: POST /api/items...');
       const newItem = {
         name: 'Dell XPS 15 Laptop',
         description: '15.6 inch OLED, Intel i9, 32GB RAM, 1TB SSD',
@@ -119,6 +120,7 @@ async function runTests() {
       console.log('\n[9] Testing READ ALL: GET /api/items...');
       const getAllRes = await request('GET', '/api/items');
       assert(getAllRes.status === 200 && Array.isArray(getAllRes.body.data), 'GET /api/items returns 200 OK with array');
+      assert(getAllRes.body.count > 0, `GET /api/items count is ${getAllRes.body.count}`);
 
       // 10. READ BY ID (GET /api/items/:id)
       console.log('\n[10] Testing READ BY ID: GET /api/items/:id...');
@@ -130,6 +132,7 @@ async function runTests() {
       const updatePayload = { price: 1399.99, inStock: false };
       const updateRes = await request('PUT', `/api/items/${createdId}`, updatePayload);
       assert(updateRes.status === 200 && updateRes.body.data?.price === 1399.99, 'PUT /api/items/:id updates price to 1399.99');
+      assert(updateRes.body.data?.inStock === false, 'PUT /api/items/:id updates inStock to false');
 
       // 12. DELETE (DELETE /api/items/:id)
       console.log('\n[12] Testing DELETE: DELETE /api/items/:id...');
