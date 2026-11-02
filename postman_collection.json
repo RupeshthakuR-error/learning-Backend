@@ -1,0 +1,267 @@
+{
+  "info": {
+    "_postman_id": "c1f7b9e0-82a4-4e2b-b6d8-backend-tutorial-id",
+    "name": "Backend Tutorial - Items CRUD API",
+    "description": "Complete Postman collection for testing the Node.js, Express, and MongoDB Atlas CRUD API assignment.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "itemId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health Check & Welcome",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": ["{{baseUrl}}"],
+          "path": [""]
+        },
+        "description": "Verifies that the Node.js Express server is up and responsive."
+      },
+      "response": []
+    },
+    {
+      "name": "1. CREATE - Add New Item (Success)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.success && jsonData.data && jsonData.data._id) {",
+              "    pm.collectionVariables.set('itemId', jsonData.data._id);",
+              "    console.log('Saved itemId: ' + jsonData.data._id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Dell XPS 15 Laptop\",\n  \"description\": \"15.6 inch OLED, Intel i9, 32GB RAM, 1TB SSD\",\n  \"price\": 1499.99,\n  \"category\": \"Electronics\",\n  \"inStock\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items"]
+        },
+        "description": "Creates a new item record in MongoDB Atlas. Automatically saves the returned item _id to the collection variable `itemId`."
+      },
+      "response": []
+    },
+    {
+      "name": "2. CREATE - Add Second Item (Book)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Clean Code\",\n  \"description\": \"A Handbook of Agile Software Craftsmanship by Robert C. Martin\",\n  \"price\": 34.50,\n  \"category\": \"Books\",\n  \"inStock\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items"]
+        },
+        "description": "Creates another item in the Books category."
+      },
+      "response": []
+    },
+    {
+      "name": "3. CREATE - Missing Fields (Error Test 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Incomplete Item\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items"]
+        },
+        "description": "Demonstrates error handling: returns 400 Bad Request when description and price are missing."
+      },
+      "response": []
+    },
+    {
+      "name": "4. READ ALL - Get All Items",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items"]
+        },
+        "description": "Retrieves all items stored in the MongoDB Atlas database."
+      },
+      "response": []
+    },
+    {
+      "name": "5. READ ALL - Search by Keyword",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items?search=laptop",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items"],
+          "query": [
+            {
+              "key": "search",
+              "value": "laptop"
+            }
+          ]
+        },
+        "description": "Demonstrates searching items by keyword in name or description."
+      },
+      "response": []
+    },
+    {
+      "name": "6. READ ALL - Filter by Category",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items?category=Books",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items"],
+          "query": [
+            {
+              "key": "category",
+              "value": "Books"
+            }
+          ]
+        },
+        "description": "Demonstrates filtering items by category."
+      },
+      "response": []
+    },
+    {
+      "name": "7. READ BY ID - Get Single Item by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items", "{{itemId}}"]
+        },
+        "description": "Fetches a specific item using its MongoDB ObjectId (stored in {{itemId}})."
+      },
+      "response": []
+    },
+    {
+      "name": "8. READ BY ID - Invalid ID Format (Error Test 400)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items/invalid-id-format-123",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items", "invalid-id-format-123"]
+        },
+        "description": "Demonstrates error handling: returns 400 Bad Request when an invalid ObjectId is provided."
+      },
+      "response": []
+    },
+    {
+      "name": "9. READ BY ID - Non-existent ID (Error Test 404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items/65c829e5781a719912345678",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items", "65c829e5781a719912345678"]
+        },
+        "description": "Demonstrates 404 Not Found error handling when an ID is valid format but does not exist in DB."
+      },
+      "response": []
+    },
+    {
+      "name": "10. UPDATE - Update Item by ID",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 1399.99,\n  \"inStock\": false,\n  \"description\": \"15.6 inch OLED, Intel i9, 32GB RAM, 1TB SSD - Clearance Sale!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/items/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items", "{{itemId}}"]
+        },
+        "description": "Updates fields on the existing item by ID."
+      },
+      "response": []
+    },
+    {
+      "name": "11. DELETE - Delete Item by ID",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items", "{{itemId}}"]
+        },
+        "description": "Deletes the item from MongoDB Atlas using its ID."
+      },
+      "response": []
+    },
+    {
+      "name": "12. DELETE - Confirm Deletion (404 Test)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/items/{{itemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "items", "{{itemId}}"]
+        },
+        "description": "Confirms the deleted item no longer exists (returns 404 Not Found)."
+      },
+      "response": []
+    }
+  ]
+}
